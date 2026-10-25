@@ -1,0 +1,91 @@
+{
+  "id": "knowledge-base",
+  "name": "专业知识库",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "knowledge",
+  "description": "内置编程与网络工程知识库，本地优先、联网兜底。群友问技术问题时先查本地库（关键词检索，无联网开销）；本地没覆盖或信息不够新时，改用联网搜索补充，必要时把本地资料与联网材料综合成一段完整讲解再回答。覆盖 C++、Python、Kotlin、Java/计算机基础、计算机网络、JavaScript 及命令行速查。数据来自 Kotlin 官方文档(Apache-2.0)、Kotlin 官方示例(MIT)、Python 官方文档中文版(PSF/CC0)、现代 C++ 教程(MIT)、Python 术语表(CC0)、C++ 术语表(MIT)、tldr-pages(CC-BY-4.0)、Node.js glossary(MIT)、中英计算机术语表(MIT)、Networking 101(CC0)、JavaGuide(Apache-2.0)、javascript-questions(MIT) 等开源项目。",
+  "author": "伊西丝 / WorkBuddy",
+  "entry": "index.js",
+  "enabledByDefault": true,
+  "capabilities": [
+    "knowledge.search"
+  ],
+  "requires": [],
+  "settings": {
+    "enabled": true,
+    "maxResults": 5,
+    "minScore": 8,
+    "relRatio": 0.18,
+    "sources": "",
+    "announceSource": true,
+    "minQueryLen": 2,
+    "allowWebFallback": true,
+    "verboseLog": false
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用知识库",
+      "description": "关掉后所有检索工具不可用，也不会占用任何内存。"
+    },
+    "maxResults": {
+      "type": "number",
+      "label": "单次最多返回条数",
+      "description": "查库时最多返回几条给模型。默认 5。调大能提高召回但会占上下文；建议 3~8。",
+      "min": 1,
+      "max": 20
+    },
+    "minScore": {
+      "type": "number",
+      "label": "最低相关度分数",
+      "description": "低于这个分数的条目视为噪声丢弃。默认 8。调高更严格（可能漏），调低更宽松（可能混入无关条目）。",
+      "min": 0,
+      "max": 200
+    },
+    "relRatio": {
+      "type": "number",
+      "label": "相对分数门槛（0~1）",
+      "description": "只保留分数达到「首条 × 该比例」的条目。默认 0.18。用于砍掉与最佳结果差距过大的尾部噪声。",
+      "min": 0,
+      "max": 1
+    },
+    "sources": {
+      "type": "string",
+      "label": "限定来源（留空=全部）",
+      "description": "逗号分隔。可选：manual（核心概念人工整理）、tldr（命令速查）、cs-terms（中英术语）、node-glossary（Node.js）、net101（网络工程）、javaguide（计算机基础）、jsq（JavaScript）、cpp-tutorial（现代C++教程）、cpp-glossary（C++术语）、cpp-cheatsheet（现代C++速查）、py-docs（Python官方文档）、py-glossary（Python术语）、py-tutorial（Python入门指南）、py-cheatsheet（Python代码示例）、k-docs（Kotlin官方文档）、k-example（Kotlin官方示例）。例如只想要概念解释不要命令，填 manual,javaguide,cs-terms,net101。"
+    },
+    "announceSource": {
+      "type": "boolean",
+      "label": "回答时标注知识来源",
+      "description": "开启后工具返回里会带来源名，模型更可能说明依据。默认开启。"
+    },
+    "minQueryLen": {
+      "type": "number",
+      "label": "最短查询长度",
+      "description": "短于这个长度的查询（字符数）直接拒绝，避免「哈」「嗯」这类触发无意义检索。默认 2。",
+      "min": 1,
+      "max": 10
+    },
+    "allowWebFallback": {
+      "type": "boolean",
+      "label": "本地查不到时允许联网补充",
+      "description": "开启后，本地知识库没覆盖或信息不够新时，机器人会改用联网搜索补充，必要时把本地资料与联网材料综合成完整讲解。关闭后只依赖本地库，查不到就如实说不确定。默认开启。"
+    },
+    "verboseLog": {
+      "type": "boolean",
+      "label": "详细日志",
+      "description": "在日志里记录每次检索的查询与命中标题，便于排查「为什么这个问题查不到」。默认关闭。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "knowledge-base-usage",
+        "title": "专业知识库",
+        "priority": 62,
+        "content": "你内置了一个「专业知识库」，覆盖编程与网络工程。当群友问到具体技术概念、术语、命令用法时（例如「什么是幂等」「TCP 三次握手」「git rebase 怎么用」「VLAN 是什么」），先调用 knowledge_search 查一下，再基于查到的内容回答。\n- 查到内容后，用你自己的话讲清楚，不要照抄原文，也不要暴露「检索」「知识库条目」这类内部说法——就像你本来就知道一样。\n- **知识库没覆盖、或者内容不够新不够全时，不要就此说「不知道」**：改用 web_search 联网搜索，对最相关的 1~2 个结果用 web_fetch 打开读正文，再综合回答。\n- 需要完整、深入地讲清一个技术问题时，把联网要点填进 knowledge_synthesize 的 web_notes，让它把本地资料与联网材料归并后，再按它给的指令写那段讲解。\n- 已经联网拿到材料了就不要重复搜同一件事。\n- 两个来源都确实没有内容时，才诚实说不确定，不要编造命令参数或协议细节。\n- 闲聊、问候、情感话题、与专业技术无关的日常对话**不要**查库，那会显得突兀。\n- 同一个问题在一轮对话里查一次就够，不要反复调用。"
+      }
+    ]
+  }
+}

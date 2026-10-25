@@ -1,0 +1,69 @@
+{
+  "id": "profile-like",
+  "name": "名片点赞",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "utility",
+  "description": "给群友/好友的 QQ 名片点赞：有人对机器人说「赞我」时，自动给 TA 的名片点赞。",
+  "author": "AI 生成",
+  "enabledByDefault": true,
+  "entry": "index.js",
+  "permissions": [],
+  "requires": [],
+  "capabilities": [],
+  "settings": {
+    "defaultTimes": 10,
+    "maxTimes": 20,
+    "cooldownSeconds": 30
+  },
+  "configSchema": {
+    "defaultTimes": {
+      "type": "number",
+      "label": "每次点赞数量",
+      "description": "对方只说「赞我」时默认点几个赞。QQ 名片赞每人每天上限一般为 20。"
+    },
+    "maxTimes": {
+      "type": "number",
+      "label": "单次上限（1~20）",
+      "description": "即使模型要求更多，最多也只点这么多，防止误传大数字被风控。"
+    },
+    "cooldownSeconds": {
+      "type": "number",
+      "label": "同一人冷却（秒）",
+      "description": "同一个 QQ 号在该时间内只能被赞一次，防止有人连续刷「赞我」被腾讯风控。0 = 不限制。"
+    }
+  },
+  "prompt": {
+    "when": "当有人 @ 机器人 或直接对机器人说「赞我」「给我点个赞」「帮我赞一下」时（想让自己或指定的人的名片点赞数 +1）",
+    "examples": [
+      "@机器人 赞我",
+      "给我点个赞",
+      "帮我赞一下他",
+      "赞我 10 个"
+    ],
+    "instruction": "调用 like_profile 工具。userId 传对方的数字 QQ 号（从聊天记录里的「名字(QQ:数字)」中取数字）；如果对方说的就是「赞我」，可以省略 userId，工具会自动认当前说话的那个人。times 一般不用传，会按技能设置里的默认数量。工具返回成功后，用一句很轻的话回应（例如「点了」）就行，不要长篇大论、不要邀功。如果工具返回失败，如实说赞不上，绝对不要假装成功。"
+  },
+  "tools": [
+    {
+      "id": "like_profile",
+      "name": "名片点赞",
+      "description": "给指定 QQ 号的 QQ 名片点赞",
+      "category": "messaging",
+      "icon": "👍",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": ["integer", "string"],
+            "description": "要赞的对方的数字 QQ 号；说「赞我」时可省略"
+          },
+          "times": {
+            "type": "integer",
+            "description": "点赞数量，1~20，默认按技能设置"
+          }
+        },
+        "required": []
+      }
+    }
+  ]
+}

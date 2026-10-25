@@ -1,0 +1,44 @@
+{
+  "id": "codex-voice",
+  "name": "codex的语音插件",
+  "version": "2.1.0",
+  "apiVersion": 1,
+  "category": "media",
+  "author": "MRLIN",
+  "description": "把文字转成语音发到当前会话（Codex 定制版，双引擎）。KK 引擎：温柔女友等 6 音色 + 任意音色ID；TIAX 引擎：266 种音色（丁真、郭德纲等，报名字或编号均可）。",
+  "enabledByDefault": true,
+  "permissions": [
+    "web_fetch"
+  ],
+  "settings": {
+    "defaultVoice": "温柔女友",
+    "tiaxDefaultVoice": "7"
+  },
+  "configSchema": {
+    "defaultVoice": {
+      "type": "string",
+      "label": "KK 默认音色",
+      "description": "KK 引擎默认音色别名或 32 位音色ID。默认：温柔女友。"
+    },
+    "tiaxDefaultVoice": {
+      "type": "string",
+      "label": "TIAX 默认音色编号",
+      "description": "TIAX 引擎默认音色编号 1-266。默认：7（爱莉希雅）。"
+    },
+    "tiaxApikey": {
+      "type": "string",
+      "label": "TIAX API 密钥",
+      "description": "TIAX 引擎的 API 密钥。留空用内置密钥。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "codex-voice-note",
+        "title": "文字转语音",
+        "priority": 30,
+        "content": "好友发「#语音 文本」「#kk 文本」「#tts 文本」，或要求「发语音」「用语音说」「文字转语音」时，调用 tts_send_voice 把指定文字转成语音发到当前会话，不要自己复述内容。音色传给 voice 参数：温柔女友/苹果香/网恋音/夹子音/青瘦音/甜御音走 KK 引擎；具体人物名（如丁真、郭德纲）或编号 1-266 走 TIAX 引擎，插件会自动识别引擎，不确定时不用传 engine。有人问有哪些音色时用 tts_list_voices。"
+      }
+    ]
+  }
+}

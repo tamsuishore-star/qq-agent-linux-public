@@ -1,0 +1,130 @@
+{
+  "id": "chat-archive",
+  "name": "群聊档案检索 + 群活跃榜 + 词云",
+  "version": "2.2.0",
+  "apiVersion": 1,
+  "category": "knowledge",
+  "description": "①翻存档回答「上周那个 B 站链接是啥」「谁提过那个游戏」；②群活跃榜：每天 0 点发日榜、周一 0 点发周榜（发完周榜自动补一张上周词云图）；③随时可以把最近一段时间的群聊做成词云图。只读本地存档、不联网。",
+  "author": "本机定制",
+  "entry": "index.js",
+  "permissions": [],
+  "enabledByDefault": true,
+  "capabilities": [],
+  "requires": [],
+  "settings": {
+    "defaultDays": 7,
+    "maxDays": 90,
+    "defaultLimit": 20,
+    "maxLimit": 50,
+    "snippetChars": 100,
+    "dailyBoard": true,
+    "weeklyBoard": true,
+    "weeklyReplacesDaily": true,
+    "boardTargets": "",
+    "boardTop": 5,
+    "boardMinMessages": 5,
+    "boardGraceMinutes": 5,
+    "autoCloud": true,
+    "wcTop": 60,
+    "wcMinCount": 3,
+    "wcFont": "Microsoft YaHei",
+    "wcStopExtra": ""
+  },
+  "configSchema": {
+    "defaultDays": {
+      "type": "number",
+      "label": "默认往前翻几天",
+      "description": "群友没说时间段时，默认在最近这么多天里找（默认 7 天）。调大能翻更久，但结果也更容易杂。"
+    },
+    "maxDays": {
+      "type": "number",
+      "label": "最多能往前翻几天",
+      "description": "安全上限，防止一次扫全部历史（默认 90 天）。"
+    },
+    "defaultLimit": {
+      "type": "number",
+      "label": "默认返回几条",
+      "description": "默认最多列出 20 条命中（默认按时间从新到旧）。"
+    },
+    "maxLimit": {
+      "type": "number",
+      "label": "最多返回几条",
+      "description": "上限，默认 50。太多会变成刷屏。"
+    },
+    "snippetChars": {
+      "type": "number",
+      "label": "每条引用截断到多少字",
+      "description": "默认 100 字。太长会占满上下文，也会显得像在念聊天记录。"
+    },
+    "dailyBoard": {
+      "type": "boolean",
+      "label": "每天 0 点发日榜",
+      "description": "0 点时统计**刚过去的那一天**（昨天 00:00~今天 00:00）的发言排行，发到目标群。"
+    },
+    "weeklyBoard": {
+      "type": "boolean",
+      "label": "周一 0 点发周榜",
+      "description": "周一 0 点时统计**刚过去的那一周**（上周一~上周日），并标出与再上一周相比的名次变化（↑↓/新上榜）。"
+    },
+    "weeklyReplacesDaily": {
+      "type": "boolean",
+      "label": "周一不再另发日榜",
+      "description": "默认打开：周一 0 点只发周榜（周榜本来就含了刚过去的周日），避免同一时刻连发两条。关掉则两条都发。"
+    },
+    "boardTargets": {
+      "type": "string",
+      "label": "榜发到哪些群",
+      "description": "填群号，多个用英文逗号分隔。留空 = 用设置页白名单里的所有群。"
+    },
+    "boardTop": {
+      "type": "number",
+      "label": "榜单列前几名",
+      "description": "默认 5 名。定多了会变成刷屏。"
+    },
+    "boardMinMessages": {
+      "type": "number",
+      "label": "上榜门槛（消息条数）",
+      "description": "群里这段时间的消息少于这个数就不发榜（默认 5）—— 免得冷群半夜收到一条\"榜是空的\"。填 0 = 不管多少都发。"
+    },
+    "boardGraceMinutes": {
+      "type": "number",
+      "label": "0 点后的补发宽限（分钟）",
+      "description": "电脑休眠/程序刚好没醒过来时，允许在 0 点后这么多分钟内补发一次；超过就跳过今天这一次（不会把半夜的榜拖到白天发）。默认 5。"
+    },
+    "autoCloud": {
+      "type": "boolean",
+      "label": "周一发完周榜，自动补一张上周词云图",
+      "description": "默认打开：周一 0 点发完周榜后，紧接着自动发一张**上一周**的群聊词云图（跟榜同一批群、同一个时间范围）。榜因为群里太冷没发，图也不会单独发。关掉就只在有人问「来个词云」时才出图。"
+    },
+    "wcTop": {
+      "type": "number",
+      "label": "词云最多放几个词",
+      "description": "默认 60 个。太多会挤成一团，太少又看不出在聊啥。"
+    },
+    "wcMinCount": {
+      "type": "number",
+      "label": "词云入选门槛（出现次数）",
+      "description": "某个词组至少出现这么多次才会进词云（默认 3）。调大＝只要最热的词，调小＝长尾词也上。"
+    },
+    "wcFont": {
+      "type": "string",
+      "label": "词云字体",
+      "description": "默认 Microsoft YaHei（微软雅黑）。想换风格可填 SimHei（黑体）、KaiTi（楷体）、SimSun（宋体）——必须是系统里装了的字体名。"
+    },
+    "wcStopExtra": {
+      "type": "string",
+      "label": "词云额外屏蔽词",
+      "description": "不想出现在词云里的词，用顿号或逗号分隔（例如群里某人的口头禅）。填进去的词、以及**包含它**的词组都会被屏蔽；群友昵称也自动不进词云。内置已屏蔽「哈哈/这个/什么/今天的」这类口水词。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "chat-archive-note",
+        "title": "群聊档案检索",
+        "priority": 43,
+        "content": "群友问「上次/上周那个链接」「谁提过 xxx」「前两天说的那个是什么」这类**回忆型**问题时，用 chat-archive__search 工具去翻本群存档，别凭记忆瞎答，也别编内容。拿到结果后**照实引用**命中消息（谁在什么时候说的、原话是什么），并说清检索范围（比如「最近 7 天里找到 3 条」）；一条都没找到就照实说没找到，可以建议换个关键词或把时间放长一点。要「谁最能说/这周谁最活跃」这类统计时用 chat-archive__stats；要「看榜/发榜」用 chat-archive__board（action=preview 只看不发、action=send 立刻发，只有主人能用 send）；要「词云/最近都在聊什么」用 chat-archive__wordcloud——它会把这段时间的群聊画成一张词云图直接发到群里，默认最近 7 天，也可以指定 days 或「上周/昨天」这类时间段，force 可绕过两次之间的冷却。另外**每周一 0 点发完周榜会自动补一张「上一周」的词云图**（同一个时间范围、同一批群；群里太冷没发榜就不会单独发图）——群友问「这周怎么没词云」时，照实说明它跟着周榜走、可在设置里关。工具只读本机存档、不联网；如果用户问的是**别的群**的内容，只有主人能查，其他人一律照实拒绝。"
+      }
+    ]
+  }
+}

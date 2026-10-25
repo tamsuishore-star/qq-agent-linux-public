@@ -1,0 +1,75 @@
+{
+    "id":  "support-topup",
+    "name":  "投喂/赞助/充值",
+    "version":  "1.0.0",
+    "apiVersion":  1,
+    "category":  "message",
+    "description":  "群里有人提到「投喂」「大白饭」「赞助」「充值」这类话时，机器人在本轮回复里说一句感谢，并把**你的收款方式**发出去。收款方式四种填法：电脑上的收款码图片（填本地路径即可，**不用上传到网上**）、图片直链、收款链接、或一句纯文字说明。命中判断在本轮消息里做，没提到就不发，也不会主动讨赏。收款方式和感谢语都能在技能设置里随时改。",
+    "author":  "本地自建",
+    "enabledByDefault":  false,
+    "permissions":  [
+
+                    ],
+    "settings":  {
+                     "localImagePath":  "",
+                     "rechargeUrl":  "",
+                     "localImageMaxMB":  4,
+                     "keywords":  "投喂,大白饭,赞助,充值",
+                     "thankYou":  "谢谢投喂，我会继续努力哒～",
+                     "injectIntoPrompt":  true,
+                     "onlyOncePerTurn":  true,
+                     "askBeforeSend":  false
+                 },
+    "configSchema":  {
+                         "localImagePath":  {
+                                                "type":  "string",
+                                                "label":  "本地收款码图片（填了就用它）",
+                                                "description":  "把电脑上收款码图片的**完整路径**粘贴进来，例如 C:\\Users\\你\\Pictures\\我的收款码.png。填了这一格就优先用它（上面的网址那格会被忽略），机器人会先发一句感谢、再单独把这张图发出去。支持 png / jpg / gif / webp / bmp，按文件内容判断（不是看后缀名）。发送时会自动复制一份到机器人自己的 data/sticker-images/ 目录，所以原图之后挪走或删掉都不影响。⚠️ 这条路径只有你（管理员）能填，模型和群友都碰不到它——机器人不会、也不能读你磁盘上别的文件。"
+                                            },
+                         "rechargeUrl":  {
+                                             "type":  "string",
+                                             "label":  "或：收款链接 / 纯文字说明",
+                                             "description":  "不想用本地图片时填这里。三种写法都认：① 收款码图片的公开直链（.png/.jpg 结尾）→ 机器人单独发一张图；② 收款链接（支付宝收款短链之类）→ 当链接发；③ 一句纯文字（如「微信搜 138xxxx」「加我好友发红包」）→ 原样当话术发。上面那格填了本地图片时，这格会被忽略。留空时机器人只会说「入口还没弄好」，不会编一个收款码出来。"
+                                         },
+                         "localImageMaxMB":  {
+                                                 "type":  "number",
+                                                 "label":  "本地图片体积上限（MB）",
+                                                 "description":  "默认 4。收款码截图一般几百 KB，不用改。超过上限会明确报错，不会硬发（大图容易撞发送超时，表现成「图发不出去」）。"
+                                             },
+                         "keywords":  {
+                                          "type":  "string",
+                                          "label":  "触发关键词",
+                                          "description":  "逗号分隔（中文逗号、英文逗号、空格都认）。默认「投喂,大白饭,赞助,充值」。命中任意一个词，本轮回复就会带上收款方式。想再加词（比如「打赏」「上供」）直接往上加；想减少就删掉不要的。改完立刻生效。"
+                                      },
+                         "thankYou":  {
+                                          "type":  "string",
+                                          "label":  "感谢语",
+                                          "description":  "机器人说感谢时用的话。默认「谢谢投喂，我会继续努力哒～」。可以换成你自己的话——但别写太长，群里一句话就够。"
+                                      },
+                         "injectIntoPrompt":  {
+                                                  "type":  "boolean",
+                                                  "label":  "自动提醒机器人发收款方式",
+                                                  "description":  "默认开。开启后：本轮消息里命中关键词时，系统会往这次请求里塞一段提醒，把收款方式和感谢语直接告诉机器人——这是「一定会看到」的那条路，建议保持开启。关掉之后，机器人就只能靠自己的判断去调 support_topup 工具拿，可能漏发。"
+                                              },
+                         "onlyOncePerTurn":  {
+                                                 "type":  "boolean",
+                                                 "label":  "每轮只提醒一次",
+                                                 "description":  "默认开。同一次处理里反复出现关键词也只提醒一遍，避免机器人被催着重复发链接（群里刷屏会被嫌弃）。"
+                                             },
+                         "askBeforeSend":  {
+                                               "type":  "boolean",
+                                               "label":  "先问一句再发收款方式",
+                                               "description":  "默认关，即直接发。开启后机器人会先自然地问一句「要投喂方式吗？」，等对方说要再发——更含蓄，但可能就没人理了。"
+                                           }
+                     },
+    "prompt":  {
+                   "sections":  [
+                                    {
+                                        "id":  "support-topup-tool-note",
+                                        "title":  "投喂 / 赞助 / 充值",
+                                        "priority":  46,
+                                        "content":  "群友提到「投喂 / 赞助 / 打赏 / 充值 / 大白饭」这类话，或者问怎么给机器人送点东西时，用 support_topup 工具拿到收款方式和感谢语，再用 send_message 把感谢语和收款方式发出去（工具若同时给了 imageUrl，再用 send_image 单独补发那张收款码）。\n没提到这些就别主动提钱、也不要讨赏；收款信息一律用工具返回的原文，不要自己编账号、收款码、金额或优惠。这是群友自愿打赏，不是商品——不承诺回报、不报价、不催。"
+                                    }
+                                ]
+               }
+}

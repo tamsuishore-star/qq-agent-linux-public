@@ -1,0 +1,120 @@
+{
+  "id": "group-reports",
+  "name": "日报·周报·告警",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "message",
+  "entry": "index.js",
+  "description": "定时把用量/会话/花费汇总成日报、周报，掉线或连续报错时私聊告警主人。确定性、不花 token。\n\n【怎么用】\n· 填「主人 QQ」即可，其余不用管：日报每天 08:30 报昨天，周报周一 09:00 报最近 7 天。\n· 想立刻要一份：私聊发 /report（昨日小报）· /report week（周报）· /help（全部指令）。\n· 告警：掉线、鉴权失败、10 分钟内出错 3 次；同类 30 分钟不重复。下面各项改动即时生效。",
+  "author": "QQ Agent（迁移自 0.2）",
+  "enabledByDefault": true,
+  "permissions": ["web_fetch"],
+  "capabilities": [
+    "reports.daily",
+    "reports.weekly",
+    "reports.alert",
+    "reports.status"
+  ],
+  "requires": [],
+  "settings": {
+    "enabled": true,
+    "ownerQq": "",
+    "dailyEnabled": true,
+    "dailyHour": 8,
+    "dailyMinute": 30,
+    "weeklyEnabled": true,
+    "weeklyWeekday": 1,
+    "weeklyHour": 9,
+    "weeklyMinute": 0,
+    "alertEnabled": true,
+    "alertErrorThreshold": 3,
+    "alertErrorWindowMin": 10,
+    "alertDisconnect": true,
+    "alertAuthError": true,
+    "alertCooldownMin": 30,
+    "checkIntervalSec": 60
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用日报周报告警",
+      "description": "关掉后不再定时检查、不再推送；已经写好的状态文件保留。"
+    },
+    "ownerQq": {
+      "type": "string",
+      "label": "主人 QQ（报告接收人）",
+      "description": "日报、周报、告警都私聊发到这个号。留空 = 只写日志不发消息。"
+    },
+    "dailyEnabled": {
+      "type": "boolean",
+      "label": "每日小报",
+      "description": "统计**昨天**的轮次/token/缓存命中/花费，模板拼字符串，不调模型。"
+    },
+    "dailyHour": {
+      "type": "number",
+      "label": "日报·时（0-23）",
+      "description": "默认 8 点。程序在跑且过了这个点才发；当天只发一次。"
+    },
+    "dailyMinute": {
+      "type": "number",
+      "label": "日报·分（0-59）",
+      "description": "默认 30 分。"
+    },
+    "weeklyEnabled": {
+      "type": "boolean",
+      "label": "每周小报",
+      "description": "统计最近 7 天的总量。"
+    },
+    "weeklyWeekday": {
+      "type": "number",
+      "label": "周报·星期（0=周日 … 6=周六）",
+      "description": "默认 1 = 周一。"
+    },
+    "weeklyHour": {
+      "type": "number",
+      "label": "周报·时（0-23）",
+      "description": "默认 9 点。"
+    },
+    "weeklyMinute": {
+      "type": "number",
+      "label": "周报·分（0-59）",
+      "description": "默认 0 分。"
+    },
+    "alertEnabled": {
+      "type": "boolean",
+      "label": "启用告警",
+      "description": "总开关，管下面三类告警。"
+    },
+    "alertErrorThreshold": {
+      "type": "number",
+      "label": "连续出错阈值（次）",
+      "description": "窗口内出错达到这个次数就告警一次，默认 3。"
+    },
+    "alertErrorWindowMin": {
+      "type": "number",
+      "label": "出错统计窗口（分钟）",
+      "description": "默认 10 分钟。"
+    },
+    "alertDisconnect": {
+      "type": "boolean",
+      "label": "掉线告警",
+      "description": "OneBot HTTP 连续探测失败时告警，恢复后再发一条「已恢复」。"
+    },
+    "alertAuthError": {
+      "type": "boolean",
+      "label": "鉴权失败告警",
+      "description": "报错里出现 401/403/invalid api key 这类字样时立刻告警（key 过期最常见）。"
+    },
+    "alertCooldownMin": {
+      "type": "number",
+      "label": "同类告警冷却（分钟）",
+      "description": "默认 30 分钟，防刷屏。"
+    },
+    "checkIntervalSec": {
+      "type": "number",
+      "label": "检查间隔（秒）",
+      "description": "定时器多久查一次是否到点，默认 60 秒。"
+    }
+  },
+  "prompt": null
+}

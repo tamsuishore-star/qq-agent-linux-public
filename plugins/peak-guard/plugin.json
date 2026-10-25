@@ -1,0 +1,128 @@
+{
+  "id": "peak-guard",
+  "name": "DeepSeek 高峰期智能节流",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "utility",
+  "entry": "index.js",
+  "description": "在 API 高峰期或群聊刷屏时减少不必要的模型调用：核心在排定会话前询问 reply.gate，超预算的普通群聊消息只标已读、不建会话、不调模型；@ 机器人、命令、私聊默认豁免。save/strict 模式还会限制单次输出长度。判定依据是用户配置的高峰时段 + 本地每分钟预算，不冒充 DeepSeek 服务器负载。",
+  "author": "TamsuiShore",
+  "enabledByDefault": true,
+  "capabilities": [
+    "reply.gate",
+    "peak-guard.status"
+  ],
+  "settings": {
+    "enabled": true,
+    "mode": "smart",
+    "peakHours": "9-12,14-18",
+    "autoPressure": true,
+    "slowMs": 15000,
+    "errorRatePct": 30,
+    "windowSec": 300,
+    "holdSec": 300,
+    "onlyGroups": true,
+    "groupPerMin": 6,
+    "globalPerMin": 20,
+    "maxOutputTokens": 500,
+    "exemptAt": true,
+    "exemptCommands": true,
+    "debugLog": false
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用高峰期节流",
+      "description": "关闭后完全不拦截模型调用，只保留状态统计。",
+      "group": "总开关"
+    },
+    "mode": {
+      "type": "enum",
+      "values": ["off", "smart", "save", "strict"],
+      "label": "运行模式",
+      "description": "off=只统计不拦截；smart=只在设置的高峰时段按预算拦截；save=高峰时段更紧的预算并限制输出长度；strict=始终按最紧预算，并限制输出长度。",
+      "group": "策略"
+    },
+    "peakHours": {
+      "type": "string",
+      "label": "高峰时段（本地时间）",
+      "description": "格式如 9-12,14-18，可用 22-2 表示跨夜。只影响 smart/save 模式；strict 始终生效。",
+      "group": "策略"
+    },
+    "autoPressure": {
+      "type": "boolean",
+      "label": "根据 429/延迟自动升压",
+      "description": "默认开：最近窗口内出现 429/503、错误率或平均延迟超阈值时，自动进入节流并保持一段时间（滞回）。这是本地观测，不代表 DeepSeek 官方负载。",
+      "group": "自动升压"
+    },
+    "slowMs": {
+      "type": "number",
+      "label": "平均延迟阈值（毫秒）",
+      "description": "默认 15000。最近窗口内平均请求耗时超过它就自动升压。",
+      "group": "自动升压"
+    },
+    "errorRatePct": {
+      "type": "number",
+      "label": "错误率阈值（%）",
+      "description": "默认 30。窗口内失败或 5xx 占比达到它就自动升压。",
+      "group": "自动升压"
+    },
+    "windowSec": {
+      "type": "number",
+      "label": "观测窗口（秒）",
+      "description": "默认 300。只统计这个窗口内的请求结果。",
+      "group": "自动升压"
+    },
+    "holdSec": {
+      "type": "number",
+      "label": "升压保持时间（秒）",
+      "description": "默认 300。触发后至少保持这么久，避免状态抖动。",
+      "group": "自动升压"
+    },
+    "onlyGroups": {
+      "type": "boolean",
+      "label": "只限制群聊（私聊不拦）",
+      "description": "默认开：私聊请求一律放行，避免影响一对一使用。",
+      "group": "豁免"
+    },
+    "exemptAt": {
+      "type": "boolean",
+      "label": "@ 机器人时始终放行",
+      "description": "默认开：被明确 @ 的消息不受预算限制。",
+      "group": "豁免"
+    },
+    "exemptCommands": {
+      "type": "boolean",
+      "label": "命令消息始终放行",
+      "description": "默认开：以 / ! ！ 开头的命令不受预算限制。",
+      "group": "豁免"
+    },
+    "groupPerMin": {
+      "type": "number",
+      "label": "每群每分钟模型调用上限",
+      "description": "默认 6；save 模式默认 4，strict 默认 2（取两者较小值）。",
+      "group": "预算"
+    },
+    "globalPerMin": {
+      "type": "number",
+      "label": "全局每分钟模型调用上限",
+      "description": "默认 20；save 模式默认 12，strict 默认 6（取两者较小值）。",
+      "group": "预算"
+    },
+    "maxOutputTokens": {
+      "type": "number",
+      "label": "节流时单次输出 token 上限",
+      "description": "默认 500，仅 save/strict 生效；正常模式下不限制输出。",
+      "group": "输出"
+    },
+    "debugLog": {
+      "type": "boolean",
+      "label": "调试日志",
+      "description": "打开后每次拦截都会写一条日志（不含聊天正文）。",
+      "group": "诊断"
+    }
+  },
+  "prompt": {
+    "sections": []
+  }
+}

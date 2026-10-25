@@ -1,0 +1,209 @@
+{
+  "id": "welcome-newcomer",
+  "name": "新人进群欢迎",
+  "version": "1.1.0",
+  "apiVersion": 1,
+  "category": "message",
+  "entry": "index.js",
+  "description": "有人进群时，机器人自动发一条欢迎消息：默认用 AI 读取新人的昵称、群名片、个性签名、群名/人数，现场生成一句独一无二的欢迎语；模型失败或资料不足时自动回退到你写的模板。\n\n【怎么用】\n· 装上即生效：群里进来一个新成员 → 机器人发一条欢迎语（可选 @ 一下新人）。\n· 欢迎语自己写：支持多条随机（一行一条，随机抽一条），支持占位符 {at} @新人、{nick} 昵称/群名片、{qq} QQ号、{group} 群名、{count} 群人数。\n· 还能跟一张本地图片：在设置里填一个图片路径（或一个文件夹，每次随机抽一张），欢迎语发完自动再跟一张图，路径随时可改。\n· 不会刷屏：同群两次欢迎有冷却、每群每小时有上限、同一个人短时间内只欢迎一次；机器人自己进群不欢迎自己。\n· 只在你指定的群里生效：设置里填「自定义群号白名单」（一行一个群号），只有这些群会欢迎；留空则沿用「设置 → 白名单」里的全局群白名单。名单外的群完全不打扰，全局黑名单永远优先拦截。\n· 走正常的发送通道：睡眠时段、发送限频、去重照样生效，也会正常进聊天存档。\n· 可选「退群告别」：有人退群时发一句（默认关闭）。\n· 自测方便：群里发「//欢迎」＝立刻模拟有人进群、跑一遍完整欢迎流程（含 AI 欢迎语与配图）；发「//再见」＝模拟有人退群。优先级高于白名单和黑名单，也不受冷却/次数限制，可以连着测。想不打扰群友，就私聊机器人发「//欢迎」，效果会原样发回你的私信，群里一条不发。正式用时可以在设置里关掉。\n\n【一句话原理】进群是 QQ 的「通知事件」不是消息，核心 5 个钩子都看不见它，所以本插件直接接在协议端的事件入口上，收到进群通知才动。开启 AI 后每个新人一次很短的模型调用（约几十 token）；关掉「AI 生成欢迎语」即回到纯本地模板、零 token。",
+  "author": "为 QQ Agent 定制",
+  "enabledByDefault": true,
+  "capabilities": [
+    "welcome-newcomer.status"
+  ],
+  "requires": [],
+  "settings": {
+    "enabled": true,
+    "testCommands": true,
+    "testSendToGroup": false,
+    "testDefaultGroup": "",
+    "groupWhitelist": "",
+    "welcomeTemplate": "{at} 欢迎进群～先看看群公告，有啥不懂的直接问我就行\n{at} 来了呀，欢迎欢迎～\n欢迎 {nick} 进群，以后就是自己人了",
+    "aiEnabled": true,
+    "aiMaxChars": 60,
+    "aiMaxTokens": 300,
+    "aiStyle": "",
+    "atNewcomer": true,
+    "delaySec": 3,
+    "imageEnabled": true,
+    "imagePath": "",
+    "imageGapSec": 1.5,
+    "cooldownSec": 30,
+    "maxPerHour": 6,
+    "sameUserBlockMin": 60,
+    "farewellEnabled": false,
+    "farewellTemplate": "{nick} 退群了，江湖再见～",
+    "leaveDetectFallback": true,
+    "leaveDetectIntervalSec": 60,
+    "debugLog": false
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用新人进群欢迎",
+      "description": "关掉后一条都不发（钩子会摘掉，零副作用）。",
+      "group": "总开关"
+    },
+    "testCommands": {
+      "type": "boolean",
+      "label": "启用测试指令（//欢迎 / //再见）",
+      "description": "群内任何人发「//欢迎」＝立刻模拟有人进群、跑一遍完整欢迎流程（含配图）；发「//再见」＝模拟有人退群、跑一遍送别流程。指令后面可以跟一个 QQ 号指定模拟谁，例如「//欢迎 123456」；不写就模拟发指令的人本人。测试指令优先级最高：不在白名单里、甚至在黑名单里的群也一样会触发，并且跳过全部冷却与次数限制（可以连续测）。指令本身会被标记已读，不会让机器人再开口回话。\n· 不想打扰群友就在**私信**里测：私聊机器人发「//欢迎」，它会把「群里会收到的样子」（含配图）原样发回你的私信，群里一条都不发；发「//欢迎 群号」还能顺便把群名/人数/群名片填进去。正式用的时候建议关掉。",
+      "group": "测试"
+    },
+    "testSendToGroup": {
+      "type": "boolean",
+      "label": "私信测试时真的发到群里（默认关）",
+      "description": "默认关闭：私信里发指令只在**你自己的私信里预览**，一条都不进群，不会打扰群友。打开后才会真的往群里发（这时必须带群号）。",
+      "group": "测试"
+    },
+    "testDefaultGroup": {
+      "type": "string",
+      "label": "私信预览用的群号（可留空）",
+      "description": "只当「背景」用：用它来填 {group} 群名、{count} 群人数，以及取模拟对象的群名片。留空也能预览（这些占位符就显示为空）。用法：//欢迎 群号，或 //欢迎 群号 QQ号（第二个号指定模拟谁）。群里测不需要管这项。",
+      "group": "测试"
+    },
+    "groupWhitelist": {
+      "type": "string",
+      "multiline": true,
+      "label": "只在这些群里生效（自定义群号白名单）",
+      "description": "一行填一个群号（也可以逗号/空格分隔），只有这些群里有人进群才会欢迎，其它群完全不打扰。例：324632156 换行 987654321。留空 = 沿用「设置 → 白名单」里的全局群白名单（当前行为）。填了就以这里为准；全局黑名单仍然永远优先拦截。",
+      "group": "生效群"
+    },
+    "welcomeTemplate": {
+      "type": "string",
+      "multiline": true,
+      "label": "欢迎语（一行一条，随机抽一条）",
+      "description": "写上多条，每次随机挑一条发出去，不像机器人复读。可用占位符：{at} = @一下新人（@ 固定在最前面）、{nick} = 他的群名片/昵称、{qq} = QQ号、{group} = 群名、{count} = 当前群人数。留空则什么都不发。",
+      "group": "欢迎语"
+    },
+    "aiEnabled": {
+      "type": "boolean",
+      "label": "AI 生成专属欢迎语",
+      "description": "默认开启：读取新人的昵称、群名片、个性签名、群名/人数，现场生成一句不重复的欢迎语；生成失败自动回退到下面的模板。关闭后只用模板，零 token。",
+      "group": "AI 欢迎"
+    },
+    "aiMaxChars": {
+      "type": "number",
+      "label": "欢迎语长度上限（字）",
+      "description": "默认 60 字，范围 20–120。太长像客服稿，太短容易空洞。",
+      "group": "AI 欢迎"
+    },
+    "aiMaxTokens": {
+      "type": "number",
+      "label": "生成 token 预算",
+      "description": "默认 300，范围 80–600。给太少可能把一句话截断（实测 140 会截断）。",
+      "group": "AI 欢迎"
+    },
+    "aiStyle": {
+      "type": "string",
+      "multiline": true,
+      "label": "风格提示（可选）",
+      "description": "例如“轻松吐槽、二次元、温柔一点”，留空用默认群友口吻。不要写会引导模型冒犯新人的内容。",
+      "group": "AI 欢迎"
+    },
+    "atNewcomer": {
+      "type": "boolean",
+      "label": "欢迎时 @ 一下新人",
+      "description": "打开时消息最前面会 @ 新人（模板里写不写 {at} 都会 @）。关掉则纯文字欢迎。",
+      "group": "欢迎语"
+    },
+    "delaySec": {
+      "type": "number",
+      "label": "延迟几秒再发（0~60）",
+      "description": "默认 3 秒。等一下再开口更像真人，也避免和 QQ 自己的入群提示撞在一起。填 0 = 立刻发。",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "group": "节奏"
+    },
+    "imageEnabled": {
+      "type": "boolean",
+      "label": "欢迎语后面跟一张图",
+      "description": "打开后，发完欢迎语会再跟一张本地图片（单独一个气泡）。关掉则只发文字。",
+      "group": "配图"
+    },
+    "imagePath": {
+      "type": "string",
+      "label": "图片路径（本地，可自定义）",
+      "description": "三种填法都行：① 单个文件，如 D:\\图片\\welcome.png；② 整个文件夹，如 D:\\图片\\欢迎图（每次随机抽一张）；③ 上面两种随便组合，一行一个，每次随机挑一行 —— 每次进群的图就不一样了。认 png / jpg / jpeg / gif / webp / bmp。填绝对路径最省事，相对路径会去程序的数据目录里找。留空则只发文字不发图。",
+      "group": "配图"
+    },
+    "imageGapSec": {
+      "type": "number",
+      "label": "文字和图片间隔几秒",
+      "description": "默认 1.5 秒。先说话、停一下再丢图，比一口气糊两条自然。填 0 = 紧接着发。",
+      "min": 0,
+      "max": 30,
+      "step": 0.5,
+      "group": "配图"
+    },
+    "cooldownSec": {
+      "type": "number",
+      "label": "同群两次欢迎的最小间隔（秒）",
+      "description": "默认 30 秒。防止一次性拉进来一群人时连着刷好几条。",
+      "min": 0,
+      "max": 3600,
+      "step": 10,
+      "group": "防刷屏"
+    },
+    "maxPerHour": {
+      "type": "number",
+      "label": "每群每小时最多欢迎几次",
+      "description": "默认 6 次。填 0 = 不限次数。",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "group": "防刷屏"
+    },
+    "sameUserBlockMin": {
+      "type": "number",
+      "label": "同一个人多久内不重复欢迎（分钟）",
+      "description": "默认 60 分钟。防止同一个人反复进退群被反复欢迎。填 0 = 不限制。",
+      "min": 0,
+      "max": 1440,
+      "step": 10,
+      "group": "防刷屏"
+    },
+    "farewellEnabled": {
+      "type": "boolean",
+      "label": "有人退群时也发一句",
+      "description": "默认关闭。打开后有人退群（或被踢）时按下面的告别语发一条，同样受冷却与配额限制。",
+      "group": "退群告别"
+    },
+    "farewellTemplate": {
+      "type": "string",
+      "multiline": true,
+      "label": "告别语（一行一条，随机抽一条）",
+      "description": "占位符同欢迎语（{at} 在这里没意义，别写）。只有上面那个开关打开时才用得到。",
+      "group": "退群告别"
+    },
+    "leaveDetectFallback": {
+      "type": "boolean",
+      "label": "退群检测兜底（成员名单比对）",
+      "description": "有些协议端只上报「有人进群」、不上报「有人退群/被踢」，那样告别语就永远不会触发、日志里也看不出原因。打开后，插件会定期比对生效群的成员名单：名单里少了谁，就认定为谁退群并告别（最多每轮 8 个群）。关掉就只依赖协议端的退群通知。",
+      "group": "退群告别"
+    },
+    "leaveDetectIntervalSec": {
+      "type": "number",
+      "label": "兜底检测间隔（秒）",
+      "description": "默认 60 秒比对一次。间隔越短发现得越快，API 调用也越多；填 0 等于关掉兜底。注意兜底是**事后**发现的，所以告别语会比人实际退群晚一点（最多晚一个间隔）。",
+      "group": "退群告别"
+    },
+    "debugLog": {
+      "type": "boolean",
+      "label": "输出调试日志",
+      "description": "排障用：把收到的进群事件、跳过原因都写进 data/logs 的日志文件。平时建议关掉。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "welcome-newcomer-note",
+        "title": "新人进群已自动欢迎",
+        "priority": 40,
+        "content": "【新人进群：系统已经自动欢迎过了】\n群里进来新成员时，系统会自动发一条欢迎语（你写的、或默认的），**不需要你再自己说一遍「欢迎」**。如果开了配图，欢迎语后面还会自动跟一张本地图片 —— 那张图也是系统发的。\n你可以在欢迎之后自然地接一句别的话（比如问问他玩什么、给他指个路），但不要重复说欢迎、也不要说「刚才那条不是我发的」之类的话。\n有人退群时同理（若开了告别功能），不用你补一句。\n另外：群里（或私信里）如果有人发「//欢迎」「//再见」这类以 // 开头的指令，那是**测试指令**（用来模拟有人进群/退群，私信里通常还会跟一个群号），系统已经在跑对应流程了 —— 你不要回应它、不要解释它、也不要再补一句欢迎或告别。"
+      }
+    ]
+  }
+}
+

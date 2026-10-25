@@ -1,0 +1,40 @@
+# ---- 运行时数据（含 API Key、聊天记录、记忆，禁止入库）----
+data/
+data*/
+*.db
+*.db-shm
+*.db-wal
+
+# ---- 依赖 ----
+node_modules/
+
+# ---- 日志与临时文件 ----
+*.log
+logs/
+*.tmp
+*.bak
+.trash/
+
+# ---- 第三方运行时（自行下载，不入库）----
+snowluma/
+runtime/
+qq-portable/
+
+# ---- 本地环境与凭据 ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+community.key
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 测试与覆盖率 ----
+coverage/
+.nyc_output/

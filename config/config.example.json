@@ -1,0 +1,102 @@
+{
+  "api": {
+    "baseUrl": "https://api.deepseek.com",
+    "apiKey": "sk-REPLACE_WITH_YOUR_KEY",
+    "model": "deepseek-chat",
+    "provider": "",
+    "fallbackModels": [],
+    "visionModel": "",
+    "videoModel": "",
+    "videoMode": "auto",
+    "vision": false,
+    "video": false,
+    "temperature": 0.8,
+    "maxRounds": 12,
+    "timeoutMs": 180000,
+    "thinkingMode": "auto",
+    "thinkingEffort": "",
+    "thinkingBudget": 0,
+    "priceInputPerM": 0,
+    "priceOutputPerM": 0,
+    "priceCachedPerM": 0,
+    "useOfficialPrice": true,
+    "modelPrices": {}
+  },
+  "providers": [],
+  "dshProviderKeys": {},
+  "webSearch": {
+    "enabled": false,
+    "searchUrl": "https://cn.bing.com/search",
+    "maxResults": 6,
+    "provider": "bing"
+  },
+  "security": {
+    "allowPrivateImageHosts": false,
+    "browseLock": {
+      "enabled": false,
+      "hosts": [],
+      "siteSearchUrl": ""
+    }
+  },
+  "snowluma": {
+    "dir": "",
+    "autoLaunch": false,
+    "wsUrl": "ws://127.0.0.1:3001",
+    "httpUrl": "http://127.0.0.1:3000",
+    "accessToken": "REPLACE_WITH_ONEBOT_TOKEN",
+    "httpAccessToken": "REPLACE_WITH_ONEBOT_TOKEN"
+  },
+  "persona": {
+    "botName": "小助手",
+    "selfNickname": "小助手",
+    "roleText": "# 角色卡\n你是群里的 AI 助手，说话简短自然。\n",
+    "participation": 3,
+    "customRules": "",
+    "systemPromptOverride": ""
+  },
+  "customPersonas": {},
+  "personaByChat": {},
+  "personaUnified": true,
+  "allow": [],
+  "deny": [],
+  "allowAllWhenEmpty": false,
+  "wakeDelayMs": 1500,
+  "drainDelayMs": 1500,
+  "maxConcurrentRuns": 2,
+  "sessionRetryAttempts": 2,
+  "send": {
+    "split": true,
+    "maxChars": 800
+  },
+  "proactive": {
+    "enabled": false
+  },
+  "chatActive": {
+    "enabled": true
+  },
+  "sticker": {
+    "enabled": true
+  },
+  "store": {
+    "enabled": true
+  },
+  "blocklist": [],
+  "globalBlocklist": [],
+  "commandMute": [],
+  "memory": {
+    "enabled": true
+  },
+  "tools": {},
+  "skills": {},
+  "extensions": {
+    "hotReload": false
+  },
+  "server": {
+    "port": 3210,
+    "token": "",
+    "autoStart": true,
+    "closeToTray": true
+  },
+  "ui": {},
+  "modelVision": {}
+}

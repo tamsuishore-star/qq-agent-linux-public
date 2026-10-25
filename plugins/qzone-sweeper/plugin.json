@@ -1,0 +1,196 @@
+{
+  "id": "qzone-sweeper",
+  "name": "空间互动（刷动态/点赞/评论）",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "message",
+  "entry": "index.js",
+  "description": "让机器人主动去逛 QQ 空间：拉好友动态、读说说内容，然后**点赞**、**评论**、**回复**。三点能力都能由用户一句话触发（「去空间看看」「给谁谁点个赞」「这条评论一下」），也能按间隔自己去刷一轮。\n\n【怎么用】\n· 手动：直接跟它说「去空间刷刷」「看看你朋友们发啥了」，它就会拉一遍动态给你念，再按你的意思点赞/评论。\n· 自动：默认**关**。打开「自己定时去刷」后，每隔「自动间隔」小时会自己去逛一趟，并在有合适内容时动手。（刷别人空间是会被人看见的社交动作，所以默认不自动，请自己开。）\n· 回复：看到某条说说的 id 和作者 QQ，传进 comment 工具即可；工具会把 tid + 作者 QQ 一起带上，所以「回复某个人的某条说说」和「评论」是同一个动作。\n\n【安全边界】\n· 单日点赞上限、单日评论上限、两次动作最小间隔，都是**代码硬拦**，模型改不了。\n· 同一个人的同一条说说只评论一次、不重复点赞（落盘记录，重启不丢）。\n· 评论内容会过一遍内容闸门：时政/违法/辱骂类词直接拒绝；写进去之前还会把 @ 和 QQ 号抹掉，避免在别人空间里乱点名。\n· 只走 SnowLuma 已实现的个人空间接口（get_qzone_feeds / get_qzone_msg_list / like_qzone / comment_qzone），不自己爬网页、不需要配 Cookie。",
+  "author": "为 QQ Agent 定制",
+  "enabledByDefault": true,
+  "_note_capabilities": [
+    "两个只读能力：别的技能/插件想判断「现在适不适合麻烦它去逛空间」时可以软依赖它们。",
+    "provider 是**真实现**（index.js 的 providers），不是占位 —— 只声明不实现的话",
+    "hasCapability 会把它过滤掉，等于骗人。"
+  ],
+  "capabilities": [
+    "qzone.sweeper-status",
+    "qzone.sweeper-can-act"
+  ],
+  "requires": [],
+  "settings": {
+    "enabled": true,
+    "autoScan": false,
+    "intervalHours": 4,
+    "quietHours": "01:00-08:00",
+    "dailyLikeLimit": 8,
+    "dailyCommentLimit": 3,
+    "hourlyLimit": 6,
+    "cooldownMinutes": 60,
+    "scanPageSize": 12,
+    "maxAuthors": 5,
+    "postsPerAuthor": 3,
+    "maxPostAgeHours": 72,
+    "allowGroups": "",
+    "allowFriends": "",
+    "blockedFriends": "",
+    "extraBannedWords": ""
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用空间互动",
+      "description": "总开关。关掉后模型连这几个工具都看不到，也不会再收到「去空间看看」的提醒。"
+    },
+    "autoScan": {
+      "type": "boolean",
+      "label": "自己定时去刷",
+      "description": "默认关。打开后机器人每隔「自动间隔」小时会自己去逛一趟好友动态，遇到合适的内容它会点赞或评论。**这是会被人看见的社交动作**，建议先手动试几次、确认它的嘴还靠谱，再打开。"
+    },
+    "intervalHours": {
+      "type": "number",
+      "label": "自动间隔（小时）",
+      "description": "自动刷的间隔，默认 4 小时。调太小容易刷屏，建议不低于 2。"
+    },
+    "quietHours": {
+      "type": "string",
+      "label": "免打扰时段（HH:MM-HH:MM）",
+      "description": "这段时间内不自动去刷（如 01:00-08:00，支持跨零点）。留空 = 不限制。手动叫它去看不受影响。"
+    },
+    "dailyLikeLimit": {
+      "type": "number",
+      "label": "每天最多点赞几条",
+      "description": "硬上限，默认 8。半夜连着给人点一串赞很显眼，工具到量会直接拒绝。"
+    },
+    "dailyCommentLimit": {
+      "type": "number",
+      "label": "每天最多评论几条",
+      "description": "硬上限，默认 3。评论比点赞显眼得多，建议克制。"
+    },
+    "hourlyLimit": {
+      "type": "number",
+      "label": "每小时最多几个动作",
+      "description": "点赞 + 评论合起来算，默认 6。防止一轮扫下来把好友动态从头点到尾。"
+    },
+    "cooldownMinutes": {
+      "type": "number",
+      "label": "两个动作之间至少隔（分钟）",
+      "description": "默认 60。真人是刷到一条点一条、不是一秒点十条，这个间隔就是用来像人的。"
+    },
+    "scanPageSize": {
+      "type": "number",
+      "label": "一次拉几条动态",
+      "description": "好友动态一页拉多少条，默认 12，上限 50。"
+    },
+    "maxAuthors": {
+      "type": "number",
+      "label": "一次最多展开几个人的说说",
+      "description": "默认 5。取动态里最近出现的几个人，各展开看几条。调大更全，但接口调用次数也会变多。"
+    },
+    "postsPerAuthor": {
+      "type": "number",
+      "label": "每个人看几条说说",
+      "description": "默认 3。"
+    },
+    "maxPostAgeHours": {
+      "type": "number",
+      "label": "只互动多少小时内的说说",
+      "description": "默认 72 小时（3 天）。太老的说说突然被点赞评论会很怪。"
+    },
+    "allowGroups": {
+      "type": "string",
+      "label": "只在哪些群提醒（群号逗号分隔）",
+      "description": "留空 = 跟随设置页的发送白名单。填了就只在这些群里注入「去空间看看」的提醒。"
+    },
+    "allowFriends": {
+      "type": "string",
+      "label": "只互动这些人（QQ 号逗号分隔，留空=所有好友）",
+      "description": "填了就只处理这些人的说说。空着 = 动态里出现的所有好友都可以。"
+    },
+    "blockedFriends": {
+      "type": "string",
+      "label": "不要碰这些人（QQ 号逗号分隔）",
+      "description": "黑名单优先于白名单。不想让机器人去烦的人填这里。"
+    },
+    "extraBannedWords": {
+      "type": "string",
+      "label": "评论额外禁词（逗号分隔）",
+      "description": "加在默认内容闸门之上的额外禁词。命中的评论会被工具直接拒绝。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "qzone-sweeper",
+        "title": "QQ空间互动（逛动态/点赞/评论）",
+        "priority": 34,
+        "content": "你可以去逛 QQ 空间的好友动态，并且能给别人的说说**点赞**和**评论**。\n\n【什么时候用】\n· 有人明确让你去（「去空间看看」「刷刷空间」「给谁点个赞」「他那条说说你评一下」）——这时用 qzone-sweeper__scan 拉动态。\n· 系统在消息里插了「去空间看看」的提醒、而你又正好想逛——也可以扫。\n· 没人提、也没提醒的时候，不要自己突然去点赞评论别人；那是在替对方决定「被机器人注意到」，很突兀。\n\n【三步走】\n① `qzone-sweeper__scan` —— 拉一遍好友动态，返回每个人的说说（含 postId、作者 QQ、正文、图片数、评论数、喜欢数、发帖时间）。这**只会读，不会动任何东西**。\n② 挑一条你真想理的、并且读懂了内容的，用 `qzone-sweeper__like`（postId + targetUin）点赞。\n③ 想评论就用 `qzone-sweeper__comment`（postId + targetUin + content），它同时就是「回复某条说说」。\n\n【评论怎么写】\n· 用你平时在群里说话的口吻，**一到两句、短**，像真人刷到随手评一句。别写成小作文、别用列表、别用 Markdown。\n· 要**接住那条说说的具体内容**（它说的那件事、那张图、那个梗），不要发「真不错」「支持」这种放之四海皆准的空话 —— 那种评论一看就是机器人。\n· 看不懂就别评，点赞就行，或者干脆什么都不做。**宁可不互动，也不要硬评。**\n· 不要评论你自己的说说；工具的返回值里会告诉你哪条是你自己的。\n\n【纪律】\n· 点赞和评论都有每日上限、每小时上限和最小间隔，**是代码硬拦的**。被拒绝说明还没到时候，如实说一句就行，不要换个说法重试、不要连点。\n· 同一条说说只会评论一次、不会重复点赞。返回「已经点过/评过」是正常的，不是出错。\n· 别人的说说底下不要提群聊、不要提群友、不要 @ 任何人 —— 那是别人的空间，群里的对话不该出现在那里。\n· 评论内容里出现任何时政、违法、辱骂内容都会被拒绝，被拒了换个正常说法，别硬撞。\n· 用户只是让你「看看」的时候，看完念给他听就够了，**不要**顺手把一堆赞点掉。\n· 做完了简短说一句（比如「逛了一圈，给谁谁点了个赞」），不要汇报式总结、不要复述整段动态。"
+      }
+    ]
+  },
+  "_note_tools_is_metadata": "上游把 tools[] 当说明性元数据读，不会自动注册；真正的注册在 index.js 的 api.registerTool。id 写 'scan'/'like'/'comment'/'status'，上游自动加 'qzone-sweeper__' 前缀。",
+  "tools": [
+    {
+      "id": "scan",
+      "name": "刷一遍空间动态",
+      "description": "拉取 QQ 空间好友动态，返回最近发说说的好友及他们的说说正文、postId、评论数等。只读，不发任何东西。",
+      "category": "query",
+      "icon": "🌐",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer", "description": "最多返回几条说说，默认 15" },
+          "authors": { "type": "integer", "description": "最多展开几个好友，默认跟随设置（5）" }
+        }
+      }
+    },
+    {
+      "id": "like",
+      "name": "给说说点赞",
+      "description": "给好友的一条说说点赞。需要 postId 和作者 QQ（targetUin），都从 scan 的返回里拿。",
+      "category": "message",
+      "icon": "👍",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "postId": { "type": "string", "description": "说说 id（scan 返回的 postId）" },
+          "targetUin": { "type": "string", "description": "说说作者的 QQ 号（scan 返回的 targetUin）" },
+          "author": { "type": "string", "description": "作者昵称，可选，只用于回执" },
+          "abstime": { "type": "integer", "description": "说说发表时间（unix 秒），scan 返回里有，传上更可靠" }
+        },
+        "required": ["postId", "targetUin"]
+      }
+    },
+    {
+      "id": "comment",
+      "name": "评论/回复一条说说",
+      "description": "在好友的一条说说下面发评论（也就是回复他这条说说）。需要 postId、作者 QQ 和你写好的 content。",
+      "category": "message",
+      "icon": "💬",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "postId": { "type": "string", "description": "说说 id（scan 返回的 postId）" },
+          "targetUin": { "type": "string", "description": "说说作者的 QQ 号（scan 返回的 targetUin）" },
+          "content": { "type": "string", "description": "评论正文，一到两句、口语、贴合那条说说" },
+          "author": { "type": "string", "description": "作者昵称，可选，只用于回执" },
+          "abstime": { "type": "integer", "description": "说说发表时间（unix 秒），可选" }
+        },
+        "required": ["postId", "targetUin", "content"]
+      }
+    },
+    {
+      "id": "status",
+      "name": "查看空间互动状态",
+      "description": "查看今天点了几个赞、评了几条、还能不能继续、上次刷是什么时候。用户问「你今天逛空间了吗」时用。",
+      "category": "query",
+      "icon": "📊",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "history": { "type": "integer", "description": "列出最近几条互动记录，默认 5" }
+        }
+      }
+    }
+  ]
+}

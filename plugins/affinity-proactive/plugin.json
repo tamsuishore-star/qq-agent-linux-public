@@ -1,0 +1,63 @@
+{
+  "id": "affinity-proactive",
+  "name": "好感度主动开话题",
+  "version": "1.1.0",
+  "apiVersion": 1,
+  "category": "utility",
+  "description": "让小助手自己决定什么时候主动找人说话（配合 skills/affinity 好感度系统）。按当前好感度等级取「检查间隔」和「触发概率」：低好感几乎不主动，高好感反而更稀有（越熟越自然，不靠刷存在感）。到点时由 AI 现场生成一句自然的话发出去，并记进聊天记录。接管了核心原有的「主动发言」循环（核心那个只发群、内容很机械）。",
+  "author": "本机定制",
+  "entry": "index.js",
+  "permissions": [
+    "web_fetch"
+  ],
+  "enabledByDefault": true,
+  "capabilities": [
+    "status.affinity-proactive"
+  ],
+  "settings": {
+    "enabled": true,
+    "scanIntervalSec": 60,
+    "quietStartHour": 0,
+    "quietEndHour": 8,
+    "idleMinMs": 600000,
+    "maxTokens": 160
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用主动开话题",
+      "description": "关闭后她不再主动冒话（被动回复不受影响）。",
+      "group": "主动开话题"
+    },
+    "scanIntervalSec": {
+      "type": "number",
+      "label": "扫描间隔（秒）",
+      "description": "多久检查一次各会话是否到点。默认 60 秒，最小 15。真正决定何时开口的是每个会话自己的随机间隔（按等级 1~3 小时）。",
+      "group": "主动开话题"
+    },
+    "quietStartHour": {
+      "type": "number",
+      "label": "静默开始（时）",
+      "description": "北京时间。默认 0 点。这个时间段内不主动开口（与人设「24:00~8:00 不回消息」一致）。",
+      "group": "静默时段"
+    },
+    "quietEndHour": {
+      "type": "number",
+      "label": "静默结束（时）",
+      "description": "北京时间。默认 8 点。静默期内到点也不发，会重新随机排期。",
+      "group": "静默时段"
+    },
+    "idleMinMs": {
+      "type": "number",
+      "label": "距上次互动的冷静期（毫秒）",
+      "description": "刚聊完不马上又冒话。默认 600000（10 分钟）。",
+      "group": "节流"
+    },
+    "maxTokens": {
+      "type": "number",
+      "label": "生成消息的长度上限（token）",
+      "description": "主动消息很短，不需要给太多预算。默认 160。",
+      "group": "生成"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "qq-like",
+  "name": "QQ点赞",
+  "version": "1.0.1",
+  "apiVersion": 1,
+  "category": "message",
+  "description": "给 AI 一键点赞的能力：别人说「给我点 20 个赞」「帮他点个赞」时，调用点赞工具给指定 QQ 用户的个人页送赞。单次协议上限 10 个，更多自动分轮送；当日额度送满时如实报实送数。1.0.1 修：onebot.call 必须带 receiver 调用（解构裸调会报 httpUrl TypeError）。",
+  "author": "QQ Agent",
+  "enabledByDefault": true,
+  "permissions": [],
+  "requires": [],
+  "capabilities": [],
+  "prompt": {
+    "when": "有人想要赞/被点赞时：例如「给我点个赞」「帮我给 123456 点 20 个赞」「今天赞还没领」。",
+    "instruction": "调用点赞工具（qq_like）。user_id 必填，是对方的 QQ 号——谁在对话里求赞就填谁的（从消息里的 QQ 号/（QQ:xxx）字样认出来，认不出就先问对方要 QQ 号）。times 不写默认 10 个，上限 50：协议端单次最多送 10 个，工具会自动分轮。结果如实转达：QQ 对同一个人有每日额度，送满时工具只会送出去一部分，把实送数告诉对方即可。"
+  },
+  "tools": [
+    {
+      "id": "qq_like",
+      "name": "点赞",
+      "description": "给指定 QQ 用户的个人页点赞。user_id = 对方 QQ 号（必填）；times = 次数（默认 10，上限 50，协议单次上限 10 自动分轮）。当日额度送满时只送得出去一部分，返回实送数。",
+      "category": "message",
+      "icon": "👍",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "对方的 QQ 号（纯数字）"
+          },
+          "times": {
+            "type": "integer",
+            "description": "点赞次数，默认 10，范围 1~50"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    }
+  ]
+}

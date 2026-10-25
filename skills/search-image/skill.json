@@ -1,0 +1,56 @@
+{
+  "id": "search-image",
+  "name": "搜图发图",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "media",
+  "description": "根据关键词搜索图片并发送到当前会话。",
+  "enabledByDefault": false,
+  "permissions": ["web_fetch"],
+  "settings": {
+    "apiUrl": "https://cn.apihz.cn/api/img/apihzimgbaidu.php",
+    "apiId": "",
+    "apiKey": "",
+    "defaultCount": 1,
+    "maxCount": 3
+  },
+  "configSchema": {
+    "apiUrl": {
+      "type": "string",
+      "label": "搜图 API 地址",
+      "description": "默认 apihz 百度图片搜索接口。"
+    },
+    "apiId": {
+      "type": "string",
+      "label": "apihz ID",
+      "description": "在 apihz.cn 控制台获取。",
+      "secret": true
+    },
+    "apiKey": {
+      "type": "string",
+      "label": "apihz KEY",
+      "description": "在 apihz.cn 控制台获取。",
+      "secret": true
+    },
+    "defaultCount": {
+      "type": "number",
+      "label": "默认图片数量",
+      "description": "不指定时发送几张，1~5，默认 1。"
+    },
+    "maxCount": {
+      "type": "number",
+      "label": "最大图片数量",
+      "description": "用户最多能请求几张，1~5，默认 3。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "search-image-note",
+        "title": "搜图发图",
+        "priority": 35,
+        "content": "当用户要求搜图、找图、发一张关于某关键词的图片时，调用 search_image 工具。关键词尽量具体。"
+      }
+    ]
+  }
+}

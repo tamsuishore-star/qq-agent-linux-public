@@ -1,0 +1,71 @@
+{
+  "id": "group-cost-report",
+  "name": "群友花费统计",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "utility",
+  "description": "在群里 @机器人 说一句「金额统计」，机器人就把这个群在指定区间里消耗的 token 与折算花费，按群友逐人列出来，并标明统计的是几号到几号。属于规则触发：命中关键词必然执行，不靠模型判断要不要做。支持「金额统计 昨天 / 本周 / 本月 / 最近7天 / 9月1日到9月30日 / 全部」等区间写法，默认统计今天。",
+  "author": "QQ Agent",
+  "entry": "index.js",
+  "permissions": [],
+  "enabledByDefault": true,
+  "capabilities": [
+    "llm.request-params"
+  ],
+  "settings": {
+    "triggerWords": "金额统计,花费统计,花费查询,token统计,用量统计,消费统计",
+    "allowWithoutAt": false,
+    "defaultRange": "today",
+    "topN": 8,
+    "maxSessions": 400,
+    "footer": true
+  },
+  "configSchema": {
+    "triggerWords": {
+      "type": "string",
+      "label": "触发关键词",
+      "description": "用逗号分隔，命中任意一个即触发统计。必须与「@机器人」同时出现（除非打开下面的免 @ 选项）。"
+    },
+    "allowWithoutAt": {
+      "type": "boolean",
+      "label": "不需要 @ 也触发",
+      "description": "开启后，群里任何人只要说出上面的关键词就会触发统计（不推荐：闲聊里出现这些词会误触发）。"
+    },
+    "defaultRange": {
+      "type": "enum",
+      "label": "默认统计区间",
+      "description": "消息里没有写区间时用这个。写了就以消息里的为准。",
+      "values": [
+        "today",
+        "yesterday",
+        "thisweek",
+        "lastweek",
+        "thismonth",
+        "lastmonth",
+        "7d",
+        "30d",
+        "all"
+      ]
+    },
+    "topN": {
+      "type": "number",
+      "label": "最多列出几人",
+      "description": "按花费从高到低列出前几名，其余合并成一行。建议 5~15。",
+      "min": 1,
+      "max": 50
+    },
+    "maxSessions": {
+      "type": "number",
+      "label": "单次最多扫描运行数",
+      "description": "区间内运行次数很多时，只统计最近这么多次，避免统计一次卡太久。",
+      "min": 20,
+      "max": 2000
+    },
+    "footer": {
+      "type": "boolean",
+      "label": "报告末尾附统计口径",
+      "description": "在报告最后加一行说明「花费按触发人归属」，避免群友误解数字来源。"
+    }
+  },
+  "prompt": null
+}

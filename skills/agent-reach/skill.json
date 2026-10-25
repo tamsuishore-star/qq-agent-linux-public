@@ -1,0 +1,76 @@
+﻿{
+  "id": "agent-reach",
+  "name": "Agent Reach",
+  "version": "1.0.1",
+  "apiVersion": 1,
+  "description": "给智能体装眼睛：网页读正文、B站视频搜索、RSS 订阅，以及 16 渠道就绪体检",
+  "author": "qqagent-ext",
+  "entry": "index.js",
+  "permissions": ["web_fetch"],
+  "prompt": {
+    "when": "当用户贴链接问「这个网页讲了什么」、要求搜 B 站/看某个视频的信息、要看某个 RSS 源，或者问「你还能看哪些网站」时",
+    "examples": [
+      "看看这篇文章 https://www.bilibili.com/video/BVxxx 讲了啥",
+      "帮我搜一下 B 站上的鲸鱼女仆",
+      "这个 RSS 里有啥新东西 https://example.com/feed.xml",
+      "你都能看哪些平台？"
+    ],
+    "instruction": "读网页用 agent-reach__web_read（url）；搜 B 站视频用 agent-reach__bili_search（keyword）；读订阅源用 agent-reach__rss_read（url）；问渠道就绪情况用 agent-reach__reach_doctor。本机对境外站点常常超时（r.jina.ai、example.com 都连不上），失败就直说读不到、不要编内容。"
+  },
+  "tools": [
+    {
+      "id": "web_read",
+      "name": "读网页",
+      "description": "抓取一个网页并把正文转成纯文本（去掉脚本/样式/标签）。返回标题 + 正文，超长会截断。",
+      "category": "web",
+      "icon": "🌐",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "description": "要读的网页地址（http/https）" },
+          "maxChars": { "type": "number", "description": "正文最多返回多少字，默认 4000，上限 12000" }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "bili_search",
+      "name": "搜B站视频",
+      "description": "用 B 站官方搜索接口搜视频，返回标题、UP主、播放量、时长和链接。无需登录。",
+      "category": "web",
+      "icon": "📺",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "keyword": { "type": "string", "description": "搜索关键词" },
+          "count": { "type": "number", "description": "返回条数，默认 5，上限 20" }
+        },
+        "required": ["keyword"]
+      }
+    },
+    {
+      "id": "rss_read",
+      "name": "读RSS",
+      "description": "读取一个 RSS/Atom 订阅源，返回最近几条的标题、时间和链接。",
+      "category": "web",
+      "icon": "📰",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string", "description": "RSS/Atom 源地址" },
+          "count": { "type": "number", "description": "返回条数，默认 8，上限 30" }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "id": "reach_doctor",
+      "name": "渠道体检",
+      "description": "运行 Agent Reach 的 doctor，报告 16 个平台渠道里哪些现在可用、哪些缺登录态。",
+      "category": "system",
+      "icon": "🩺",
+      "parameters": { "type": "object", "properties": {} }
+    }
+  ]
+}
+

@@ -1,0 +1,83 @@
+{
+  "id": "moderation",
+  "name": "群管理",
+  "version": "1.3.2",
+  "apiVersion": 1,
+  "category": "message",
+  "description": "让 AI 能自己决定禁言群友、撤回消息。动手风格和踢人权两个旋钮分开调，改完立刻生效。\n\n【v1.3.2】机器人**不是管理员**时，禁言/踢人/撤回类工具会被**直接拒绝**（不再先调一遍才被拒），并明确告诉它别再尝试、也别在聊天里提「禁言你」「冷静一分钟」。",
+  "author": "明",
+  "enabledByDefault": true,
+  "settings": {
+    "promptStyle": "bold",
+    "kickStance": "normal",
+    "maxMuteSeconds": 600,
+    "defaultMuteSeconds": 60,
+    "allowKick": false,
+    "recallOthers": true,
+    "detectSpam": true,
+    "repeatCount": 3,
+    "floodCount": 5,
+    "floodWindowSec": 20
+  },
+  "configSchema": {
+    "promptStyle": {
+      "type": "enum",
+      "values": [
+        "bold",
+        "conservative"
+      ],
+      "label": "动手风格（禁言/撤回）",
+      "description": "bold（胆大）= 没人叫也敢自己动手，看谁不顺眼、被惹到就禁言，不需要理由充分。conservative（保守）= 没人叫时默认不动手，只在真刷屏/真辱骂时动手，抬杠和观点不合一律不动。改完立刻生效，不用重启。"
+    },
+    "kickStance": {
+      "type": "enum",
+      "values": [
+        "strict",
+        "normal",
+        "eager"
+      ],
+      "label": "踢人权（独立于动手风格）",
+      "description": "踢人不可逆、对方要重新申请，所以单独一个旋钮。strict（严禁）= 任何情况都不用，只有群主点名要求才破例；normal（常规，默认）= 门槛很高但不推脱，真到那一步会先调工具拿真实结果，不会用「我无权限」搪塞；eager（敢踢）= 跟禁言一样敢用，被惹到就踢、有人挑衅「来踢我」就照做，尺度大风险自负。改完立刻生效。注意：这三档都只是「多愿意」，allowKick 关着时哪档都踢不动。"
+    },
+    "maxMuteSeconds": {
+      "type": "number",
+      "label": "禁言最长秒数（硬上限）",
+      "description": "AI 单次禁言不得超过这个秒数，请求更长的会被自动压到这个值。默认 600（10 分钟）。两种风格都受这个上限约束。"
+    },
+    "defaultMuteSeconds": {
+      "type": "number",
+      "label": "默认禁言秒数",
+      "description": "AI 没指定时长时用这个。默认 60（1 分钟）—— 这个功能主要用于跟群友互动，别设太长。"
+    },
+    "allowKick": {
+      "type": "boolean",
+      "label": "允许 AI 踢人",
+      "description": "默认关闭。开启前请想清楚：AI 会根据自己的判断踢群友，且被踢的人要重新申请入群。"
+    },
+    "recallOthers": {
+      "type": "boolean",
+      "label": "允许撤回别人的消息",
+      "description": "默认开。关闭后 AI 只能撤回自己发的消息。"
+    },
+    "detectSpam": {
+      "type": "boolean",
+      "label": "刷屏时提醒 AI 可以动手",
+      "description": "默认开。检测到有人复读或刷屏时，往请求里加一句提醒，让 AI 别漏看。只是提醒，动不动手仍由 AI 自己判断（不会自动禁言）。"
+    },
+    "repeatCount": {
+      "type": "number",
+      "label": "复读几次算刷屏",
+      "description": "同一个人把同一条消息发到这个次数就提醒。默认 3。"
+    },
+    "floodCount": {
+      "type": "number",
+      "label": "短时间内发几条算刷屏",
+      "description": "同一个人在下面那个时间窗内发到这个条数就提醒。默认 5。"
+    },
+    "floodWindowSec": {
+      "type": "number",
+      "label": "刷屏判定时间窗（秒）",
+      "description": "配合上一项。默认 20 秒。"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "ai-image",
+  "name": "AI生图",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "media",
+  "description": "支持文生图与图生图：共用 Base URL 和 API Key，按文字生成图片或参考会话图片修改，并发送到当前群聊或私聊。",
+  "author": "nuoxi4n",
+  "enabledByDefault": true,
+  "capabilities": ["image.generate", "image.edit"],
+  "requires": [],
+  "permissions": ["web_fetch"],
+  "settings": {
+    "baseUrl": "",
+    "apiKey": "",
+    "model": "gpt-image-1",
+    "editModel": "",
+    "defaultSize": "",
+    "responseFormat": "auto",
+    "extraBody": "",
+    "timeoutMs": 180000,
+    "downloadTimeoutMs": 60000,
+    "refDownloadTimeoutMs": 30000,
+    "maxRetries": 0,
+    "maxImageMB": 8,
+    "maxRefMB": 20
+  },
+  "configSchema": {
+    "baseUrl": {
+      "type": "string", "label": "接口 Base URL（必填）",
+      "description": "填写兼容 images API 的服务地址，如 https://example.com/v1。纯域名自动补 /v1；已有路径按原样作为 API 前缀。完整 /images/generations 或 /images/edits 地址会自动切换到对应模式。不能带查询参数或密钥。"
+    },
+    "apiKey": {
+      "type": "string", "label": "API Key（必填）", "secret": true,
+      "description": "填写服务商提供的 Key，通过 Authorization: Bearer 发送；只用于生成/编辑接口，不发给图片下载地址。"
+    },
+    "model": {
+      "type": "string", "label": "图片模型",
+      "description": "默认 gpt-image-1。请按服务商实际提供的模型 id 修改；默认同时用于文生图和图生图，所选模型需支持对应 images 接口。"
+    },
+    "editModel": {
+      "type": "string", "label": "图生图模型（可选）",
+      "description": "留空复用图片模型。文生图和图生图使用不同模型时，在此填写支持 /images/edits 的模型 id。"
+    },
+    "defaultSize": {
+      "type": "string", "label": "默认尺寸",
+      "description": "留空不传 size，由服务端决定。可填 auto、1024x1024、1536x1024 等；具体尺寸由模型支持情况决定。"
+    },
+    "responseFormat": {
+      "type": "enum", "label": "返回格式", "values": ["auto", "url", "b64_json"],
+      "description": "推荐 auto（不传 response_format）。url / b64_json 仅用于明确支持该参数的模型。"
+    },
+    "extraBody": {
+      "type": "string", "label": "额外请求字段（JSON）", "multiline": true,
+      "description": "可选 JSON 对象，如 {\"quality\":\"high\"}。非法 JSON 会报错。model、prompt、n、size、image、mask、response_format、stream 等核心字段不会被覆盖。"
+    },
+    "timeoutMs": {
+      "type": "number", "label": "生成超时（毫秒）",
+      "description": "默认 180000，范围 5000~600000。包含读取完整响应体；超时或断连不会自动重试生成。"
+    },
+    "downloadTimeoutMs": {
+      "type": "number", "label": "结果图下载超时（毫秒）",
+      "description": "默认 60000，范围 5000~300000。网络故障最多重试下载一次，不重新调用生成接口。"
+    },
+    "refDownloadTimeoutMs": {
+      "type": "number", "label": "参考图下载超时（毫秒）",
+      "description": "默认 30000，范围 5000~120000。QQ 图片链接失效时请重新发送参考图。"
+    },
+    "maxRetries": {
+      "type": "number", "label": "HTTP 429 重试次数",
+      "description": "默认 0（关闭），范围 0~3。只有 HTTP 429 限流会按此设置重试；5xx、408、超时和连接中断均不重试。开启前请了解服务商的计费规则，不能保证重试不计费。"
+    },
+    "maxImageMB": {
+      "type": "number", "label": "单张结果图上限（MB）",
+      "description": "默认 8，范围 1~32。下载、base64 解码和发送前统一校验，超限返回错误。"
+    },
+    "maxRefMB": {
+      "type": "number", "label": "参考图上限（MB）",
+      "description": "默认 20，范围 1~50。URL、base64、本地协议端文件和能力调用中的 Buffer 均应用相同限制。"
+    }
+  },
+  "prompt": null
+}

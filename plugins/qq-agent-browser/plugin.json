@@ -1,0 +1,72 @@
+{
+  "id": "qq-agent-browser",
+  "name": "浏览器（Edge 调试端口）",
+  "version": "1.1.1",
+  "apiVersion": 1,
+  "category": "utility",
+  "entry": "index.js",
+  "author": "",
+  "enabledByDefault": true,
+  "permissions": ["web_fetch"],
+  "capabilities": ["browser.session"],
+  "requires": [],
+  "description": "让机器人真的能开网页：抓到 JS 渲染完的内容（普通抓取只能拿到空壳）、把页面截图发到群里、需要时滚动/点击/填表。走本机 Edge 的调试端口，用的是插件自己的独立 profile —— 读不到你平时那个浏览器里的登录态。\n\n用法举例：群里丢一个链接说「打开这个网页截个图」，它就会真的把页面打开、等渲染完、把截图发回群里；也可以让它「翻到评论区念几条热评」「点下一页再截一张」。",
+  "settings": {
+    "enabled": true,
+    "port": 9333,
+    "profileDir": "",
+    "edgePath": "",
+    "actions": "tabs,url,open,newtab,text,html,eval,a11y,shot,wait,click,fill",
+    "autoLaunch": true,
+    "sendShotToChat": true,
+    "onlyWhitelist": true,
+    "domainAllow": ""
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用浏览器能力",
+      "description": "关掉后工具不再出现在模型手里，也不会去连/起 Edge。"
+    },
+    "port": {
+      "type": "number",
+      "label": "调试端口",
+      "description": "默认 9333。⚠️ 刻意避开 9222 —— 那个端口上常常挂着**别的**浏览器实例（你平时那个、或别的工具起的）。插件只要发现端口在听就会直接连上去用，所以端口撞车 = 把那个实例里的登录态交给机器人。要改就改成一个只有本插件在用的端口。"
+    },
+    "profileDir": {
+      "type": "string",
+      "label": "浏览器数据目录（留空 = 用插件自己的独立目录）",
+      "description": "⚠️ 强烈建议留空。留空时用 data/qq-agent-browser/profile，是**独立的**浏览环境：里面没有你的账号登录态，群友就算使唤机器人开网页也碰不到你的号。填成你平时那个 Edge 的 user-data-dir 就等于把全部登录态交给机器人，别这么干。"
+    },
+    "edgePath": {
+      "type": "string",
+      "label": "Edge 可执行文件路径（留空 = 自动找）",
+      "description": "留空时按常见安装位置找 msedge.exe。找不到会在工具返回里告诉你该填什么。"
+    },
+    "actions": {
+      "type": "string",
+      "label": "允许的动作（逗号分隔）",
+      "description": "可选：tabs / url / open / newtab / text / html / eval / a11y / click / fill / shot / wait。想最保守就填 \"tabs,url,open,text,html,shot,wait\"（只读+截图，不给点击和任意 JS）；eval 能执行页面里的任意 JS，click/fill 能替你操作网页，不确定就先去掉它们。"
+    },
+    "autoLaunch": {
+      "type": "boolean",
+      "label": "端口不通时自动启动 Edge（默认开）",
+      "description": "开着：机器人第一次要用浏览器时自己把 Edge 拉起来（用上面的独立 profile）。关掉：需要你自己先启动好带调试端口的 Edge，否则工具只会返回一条可复制的启动命令。"
+    },
+    "sendShotToChat": {
+      "type": "boolean",
+      "label": "允许把截图发到当前会话（默认开）",
+      "description": "开着时，模型可以调用 shot 并让它把图直接发到当前群/私聊（群里看到的就是一张图）。关掉：截图只能返回给模型自己看，发不出去。"
+    },
+    "onlyWhitelist": {
+      "type": "boolean",
+      "label": "只有白名单会话能用（默认开）",
+      "description": "开着时，只有核心白名单里的群/好友能触发浏览器能力（跟机器人「能不能回话」用的是同一份名单）。关掉则任何能跟机器人说话的会话都能让它开网页、截图 —— 白名单为空时尤其危险。"
+    },
+    "domainAllow": {
+      "type": "string",
+      "label": "只允许访问这些域名（留空 = 不限）",
+      "description": "逗号分隔，例如 bilibili.com, zhihu.com。填了以后 open/newtab 只放行命中的域名，其余直接拒绝 —— 想把它锁在几个站点上就用这个。留空则不限制（默认）。⚠️ 它拦不住 eval / click：这两类动作本来就能让页面跳走（点站外链接、改 location）；真要锁死，就同时把 eval、click、fill 从「允许的动作」里去掉。"
+    }
+  }
+}

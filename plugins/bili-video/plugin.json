@@ -1,0 +1,96 @@
+{
+    "id":  "bili-video",
+    "name":  "B站视频转发",
+    "version":  "1.0.3",
+    "apiVersion":  1,
+    "category":  "media",
+    "description":  "群里有人发 B 站链接（含 b23.tv 短链）时，自动把视频下载下来转发进群，并附标题 / UP 主 / 时长 / 原链接。**不经过模型，零 token 消耗**。\n支持搜索与排序（见设置项）：可按 UP 主筛选、限制时长、关键词补全，避免把循环歌单/助眠合集当「一首歌」发出来。\n依赖系统里的 ffmpeg（用于合并音视频流）。",
+    "author":  "本地自建",
+    "enabledByDefault":  true,
+    "capabilities":  [
+                         "media.download"
+                     ],
+    "requires":  [
+
+                 ],
+    "settings":  {
+                     "qn":  16,
+                     "maxMB":  100,
+                     "timeoutMs":  60000,
+                     "mediaDir":  "",
+                     "sortBy":  "up-first",
+                     "fuzzySearch":  true,
+                     "maxDurationSec":  1800,
+                     "minDurationSec":  0,
+                     "napcatMountHost":  "/opt/napcat/qq",
+                     "napcatMountContainer":  "/app/.config/QQ"
+                 },
+    "configSchema":  {
+                         "qn":  {
+                                    "type":  "number",
+                                    "label":  "清晰度（qn）",
+                                    "description":  "16=360P（默认，不需要登录就能拿到）、32=480P、64=720P。无 Cookie 时接口只保证 360P/480P；填更大的值不会报错，但接口会退回它能给的那档。"
+                                },
+                         "maxMB":  {
+                                       "type":  "number",
+                                       "label":  "体积上限（MB）",
+                                       "description":  "默认 100。超过就直接发链接不下载 —— QQ 对视频体积有限制，硬发大文件会卡住发送队列。"
+                                   },
+                         "timeoutMs":  {
+                                           "type":  "number",
+                                           "label":  "下载超时（毫秒）",
+                                           "description":  "默认 60000。视频较大或网络慢时可调大。"
+                                       },
+                         "mediaDir":  {
+                                          "type":  "string",
+                                          "label":  "视频落地目录",
+                                          "description":  "留空 = 应用 data/bili-media。下载的视频发完即弃（超过 2 小时自动清理）。"
+                                      },
+                         "sortBy":  {
+                                        "type":  "enum",
+                                        "values":  [
+                                                       "up-first",
+                                                       "up-only",
+                                                       "play",
+                                                       "default"
+                                                   ],
+                                        "label":  "搜索结果排序",
+                                        "description":  "up-first=UP 本人的优先，其余按播放量（默认，推荐）。注意：只搜 UP 主名字时返回的 20 条作者全是本人，但一旦加词变成「某UP主 附加词」，前 5 条就只剩 2 条是本人、其余是别人的二创剪辑 —— 用名字比对把本人的提到前面。up-only=只发作者名对得上的。play=纯按播放量。default=接口原序。排序全在本地做，不消耗 token。本插件只在“自动转发群里的链接”时用不到排序，此项供与技能共用同一份配置。"
+                                    },
+                         "maxDurationSec":  {
+                                                "type":  "number",
+                                                "label":  "时长上限（秒）",
+                                                "description":  "默认 1800（30 分钟）。高播放里混着大量循环歌单/助眠合集（有些长达 60:18、32:00），它们会稳定赢下播放量排序，但不适合当「给别人听一首歌」。填 0 = 不限制时长。"
+                                            },
+                         "minDurationSec":  {
+                                                "type":  "number",
+                                                "label":  "时长下限（秒）",
+                                                "description":  "默认 0（不限制）。想避开十几秒的碎片片段可以设成 30 左右。"
+                                            },
+                         "fuzzySearch":  {
+                                             "type":  "boolean",
+                                             "label":  "关键词模糊补救",
+                                             "description":  "默认开启。第一次搜索一条本人都没有时，用 B 站搜索建议把词补完整再搜一次。只在完全没搜到本人时触发。本插件只在“自动转发群里的链接”时用不到搜索，此项供与技能共用同一份配置。"
+                                         },
+                         "napcatMountHost":  {
+                                                 "type":  "string",
+                                                 "label":  "NapCat 宿主机挂载目录（Docker 场景）",
+                                                 "description":  "默认 /opt/napcat/qq，对应容器内 /app/.config/QQ。宿主机 file:// 发送失败时会复制到这里再发。"
+                                             },
+                         "napcatMountContainer":  {
+                                                      "type":  "string",
+                                                      "label":  "NapCat 容器内对应目录",
+                                                      "description":  "默认 /app/.config/QQ，与上一项配对。"
+                                                  }
+                     },
+    "prompt":  {
+                   "sections":  [
+                                    {
+                                        "id":  "bili-video-note",
+                                        "title":  "B站视频",
+                                        "priority":  45,
+                                        "content":  "群里出现 B 站链接时，插件会自动把视频本体转发进群（无需你动手）。你只在「有人要你找/推荐 B 站视频」时才调 bili_video 工具。视频是插件下载后发出去的，你并没有看过内容，不要评论视频里的画面。"
+                                    }
+                                ]
+               }
+}

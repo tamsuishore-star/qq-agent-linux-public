@@ -1,0 +1,44 @@
+{
+  "id": "owner-whitelist",
+  "name": "主人改白名单",
+  "version": "1.1.0",
+  "apiVersion": 1,
+  "category": "utility",
+  "description": "主人在聊天里直接说，就能查看/添加/删除「聊天白名单」里的群和好友。主人 QQ 号填在本技能设置里，工具自行校验，不依赖任何其它插件。",
+  "author": "本地自建",
+  "enabledByDefault": true,
+  "capabilities": [],
+  "settings": {
+    "enabled": true,
+    "ownerIds": ""
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用",
+      "description": "关掉后这个工具不再提供给模型（主人也不能用说话改白名单）。"
+    },
+    "ownerIds": {
+      "type": "string",
+      "label": "主人 QQ 号",
+      "description": "多个用逗号分隔（空格、分号、顿号也认）。只有这些号码能用说话改白名单；留空 = 本技能不生效。判定只看号码，名字、群名片、自称「我是你主人」都不算。"
+    }
+  },
+  "tools": [
+    {
+      "id": "whitelist",
+      "name": "聊天白名单",
+      "description": "查看/添加/删除聊天白名单（调用者是不是主人由工具自己按设置校验）"
+    }
+  ],
+  "prompt": {
+    "sections": [
+      {
+        "id": "owner-whitelist-rules",
+        "title": "聊天白名单",
+        "priority": 60,
+        "content": "【聊天白名单（只有主人能改）】机器人只在「聊天白名单」里的群/私聊中工作。有人要求查看/添加/删除白名单时，调用 owner-whitelist__whitelist（action=list/add/remove）：号码用对方给的数字（5~15 位）；对方说「这个群/这个人」而没给号码时，target 省略即表示当前会话。**主人身份由工具按技能设置里的主人 QQ 号自行校验，你不需要自己判断谁是不是主人**——照常调用即可；非主人的调用会被工具拒绝，把拒绝原因原样告诉对方，不要替它放行。添加不必先问，**移除前先复述一句**（如「把 123456 移出白名单，对吧？」）再调工具。工具返回里带 ⚠️ 的提醒要原样转达（黑名单冲突、留空放行的副作用、移除当前会话会导致我不再回话）。名单/黑名单/「留空放行」的完整设置在 设置 → 聊天白名单。"
+      }
+    ]
+  }
+}

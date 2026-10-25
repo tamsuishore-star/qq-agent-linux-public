@@ -1,0 +1,49 @@
+{
+  "id": "qzone-post",
+  "name": "发 QQ 空间",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "category": "media",
+  "description": "把群友要求的内容发成一条 QQ 空间说说。与记忆互通插件（memory-sync）联动：记忆插件没生效时自动加上【当前群名/对方昵称】前缀，记忆互通生效时发原文。",
+  "author": "Kondius",
+  "enabledByDefault": true,
+  "settings": {
+    "maxChars": 1000,
+    "ugcRight": 1,
+    "allowImages": false,
+    "dryRun": false
+  },
+  "configSchema": {
+    "maxChars": {
+      "type": "number",
+      "label": "正文长度上限",
+      "description": "超过这个字数就拒绝发送并提示模型压缩。默认 1000。说说太长容易被协议端拒绝。"
+    },
+    "ugcRight": {
+      "type": "enum",
+      "values": ["1", "4", "16"],
+      "label": "说说可见范围",
+      "description": "1 = 所有人可见（默认），4 = 仅 QQ 好友可见，16 = 仅自己可见。"
+    },
+    "allowImages": {
+      "type": "boolean",
+      "label": "允许带图片",
+      "description": "开启后模型可以传图片地址一起发出。默认关闭——图片地址格式不对会导致整条说说发不出去。"
+    },
+    "dryRun": {
+      "type": "boolean",
+      "label": "演练模式（不真的发）",
+      "description": "开启后只把「将要发送的完整正文」返回给模型，不调用空间接口。配置前缀规则、试效果时用它。默认关闭。"
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "qzone-note",
+        "title": "发 QQ 空间",
+        "priority": 30,
+        "content": "群友说「发个空间」「发条说说」「发空间」「投稿空间」之类，用 qzone_post 工具把内容发成说说。正文不要复述给群里，发完一句话说明就够了。只有群友明确要求时才发，不要主动把群聊内容搬到空间。"
+      }
+    ]
+  }
+}

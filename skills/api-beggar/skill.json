@@ -1,0 +1,82 @@
+{
+  "id": "api-beggar",
+  "name": "API 余额告急乞讨",
+  "version": "1.1.0",
+  "apiVersion": 1,
+  "category": "utility",
+  "description": "查询 API 中转站余额；低于阈值时让模型用自己的人设在群里求充值。带冷却与缓存，不会刷屏。**按关键词触发**（群友说「查余额」之类才查，平时零成本），并会在「主动机会」里巡查一次。首次使用请先开着演练模式试通接口。",
+  "author": "QQ Agent 用户",
+  "enabledByDefault": true,
+  "permissions": ["web_fetch"],
+  "settings": {
+    "baseOrigin": "",
+    "balanceUrl": "",
+    "balancePath": "",
+    "unitScale": 1,
+    "apiKey": "",
+    "threshold": 5,
+    "cooldownMin": 120,
+    "cacheSec": 300,
+    "dryRun": true,
+    "triggerKeywords": "查余额,余额,还剩多少,够不够,钱够吗,没钱了,要充值,快没钱,余额不足",
+    "triggerMode": "keyword+proactive"
+  },
+  "configSchema": {
+    "baseOrigin": {
+      "type": "string",
+      "label": "API Base URL",
+      "description": "你的中转站根地址，例如 https://api.example.com（不带斜杠结尾）。留「余额接口」为空时，会拿它去自动探测常见余额接口；填了「余额接口」的相对路径时用它拼成完整地址。"
+    },
+    "balanceUrl": {
+      "type": "string",
+      "label": "余额接口",
+      "description": "留空 = 自动探测（按 /user/balance → /v1/dashboard/balance → /api/user/self → /v1/account/balance 的顺序，命中即停）。也可以填完整 URL，或以 / 开头的路径（配合上面的 Base URL）。DeepSeek 官方填 /user/balance。"
+    },
+    "balancePath": {
+      "type": "string",
+      "label": "余额字段（点路径）",
+      "description": "从返回的 JSON 里取数字用的路径，例如 data.balance；DeepSeek 用 balance_infos.0.total_balance。留空 = 自动依次尝试 data.balance / balance / data.quota / quota / balance_infos.0.total_balance 等常见写法。"
+    },
+    "unitScale": {
+      "type": "number",
+      "label": "单位换算除数",
+      "description": "有些站返回的不是元，而是「额度」整数（例如 500000 = 1 元）。填 500000 就会把取到的数除以它。正常按元返回就填 1（默认）。"
+    },
+    "apiKey": {
+      "type": "string",
+      "secret": true,
+      "label": "查询用 API Key 🔒"
+    },
+    "threshold": {
+      "type": "number",
+      "label": "乞讨阈值",
+      "description": "余额低于这个数就求充值。默认 5。改完立刻生效。"
+    },
+    "cooldownMin": {
+      "type": "number",
+      "label": "冷却（分钟）",
+      "description": "两次求充值之间的最小间隔，防止刷屏。默认 120。填 0 = 不冷却（测连续触发时用）。"
+    },
+    "cacheSec": {
+      "type": "number",
+      "label": "余额缓存秒数",
+      "description": "多久内不重复请求余额接口（省请求、也省每次会话的等待）。默认 300。填 0 = 每次都实时查。"
+    },
+    "dryRun": {
+      "type": "boolean",
+      "label": "演练模式",
+      "description": "开着时会正常查余额、报告阈值是否触发，但不会让模型为此发言。首次配置接口时请保持开启，验证无误后再关掉。默认开启。"
+    },
+    "triggerKeywords": {
+      "type": "string",
+      "label": "触发关键词",
+      "description": "本轮触发消息里出现这些词才查余额（按逗号分隔，中英文逗号、顿号、分号、空格都行）。只匹配【未读信息】= 本轮的新消息，历史里聊过『余额』不会误触发。留空 = 恢复默认词表。改完保存即生效。"
+    },
+    "triggerMode": {
+      "type": "enum",
+      "values": ["keyword", "keyword+proactive"],
+      "label": "触发范围",
+      "description": "keyword = 只有关键词命中才查（最省，没人问就永远不查）；keyword+proactive = 关键词之外，核心给的『主动机会』也巡查一次（低了才喊，ok 就安静结束，默认）。"
+    }
+  }
+}

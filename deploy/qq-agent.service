@@ -1,0 +1,25 @@
+[Unit]
+Description=QQ Agent (headless bot)
+Documentation=https://github.com/K0nd1us/QQ-agent
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=qqagent
+Group=qqagent
+WorkingDirectory=/opt/qq-agent
+Environment=NODE_ENV=production
+Environment=QQ_AGENT_PORT=3210
+ExecStart=/usr/local/bin/node src/server.js
+Restart=always
+RestartSec=5
+TimeoutStopSec=25
+KillSignal=SIGINT
+KillMode=control-group
+NoNewPrivileges=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
